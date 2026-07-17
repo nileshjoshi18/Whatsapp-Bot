@@ -45,6 +45,23 @@ function parseAndUpsertCSV(filePath) {
         technician_assigned_date, created_date, end_date,
         days_pending, resolved_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(case_number) DO UPDATE SET
+        technician_name=excluded.technician_name,
+        customer_name=excluded.customer_name,
+        city=excluded.city,
+        state=excluded.state,
+        zip=excluded.zip,
+        street=excluded.street,
+        complaint=excluded.complaint,
+        product_name=excluded.product_name,
+        wo_status=excluded.wo_status,
+        line_item_status=excluded.line_item_status,
+        technician_assigned_date=excluded.technician_assigned_date,
+        created_date=excluded.created_date,
+        end_date=excluded.end_date,
+        days_pending=excluded.days_pending,
+        resolved_at=CASE WHEN excluded.resolved_at IS NOT NULL THEN excluded.resolved_at ELSE tasks.resolved_at END,
+        updated_at=excluded.updated_at
     `);
 
     const insertMany = db.transaction((rows) => {
