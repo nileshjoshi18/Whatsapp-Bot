@@ -9,20 +9,12 @@ let qrCodeBase64 = null;
 let isReady = false;
 
 const client = new Client({
-<<<<<<< HEAD
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        headless: false
-    }
-=======
   authStrategy: new LocalAuth({ dataPath: './session' }),
   puppeteer: {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     protocolTimeout: 300_000, // 5 minutes adjust this as need beaucse this is 
     //done beacuse for bundelling  the parser so that pupter does not timeout during the parsing 
   },
->>>>>>> 8cdcebbcc7a7ac14e9317868afafcc5b31408ed2
 });
 
 client.on('qr', async (qr) => {
