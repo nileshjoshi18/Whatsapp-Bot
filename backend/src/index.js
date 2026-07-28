@@ -18,10 +18,12 @@ const upload = multer({ dest: path.join(__dirname, '../data/tmp/') });
 
 try {
   client.initialize();
+  console.log("Whatsapp connected ");
+  
 } catch (err) {
   console.error('WhatsApp client initialization failed:', err.message);
 }
-startScheduler();
+// startScheduler();
 
 // Ensure data directories exist
 fs.mkdirSync(path.join(__dirname, '../data'), { recursive: true });
@@ -43,7 +45,7 @@ async function initializeDataFromCsv() {
   }
 }
 
-initializeDataFromCsv();
+// initializeDataFromCsv();
 
 // QR Code endpoint
 app.get('/api/qr', (req, res) => {
@@ -78,87 +80,6 @@ app.post('/api/upload', upload.single('csv'), async (req, res) => {
   }
 });
 
-
-// Export pending tasks as Excel
-// app.get('/api/export-tasks', async (req, res) => {
-//   try {
-//     // Fetch all pending tasks with status 'New'
-//     const tasks = db.prepare(`
-//       SELECT 
-//         case_number,
-//         technician_name,
-//         customer_name,
-//         city,
-//         street,
-//         zip,
-//         complaint,
-//         product_name,
-//         line_item_status
-//       FROM tasks 
-//       WHERE resolved_at IS NULL AND line_item_status = 'New'
-//       ORDER BY case_number ASC
-//     `).all();
-
-//     // Create workbook and worksheet
-//     const workbook = new ExcelJS.Workbook();
-//     const worksheet = workbook.addWorksheet('Pending Tasks');
-
-//     // Define columns (matching the requested fields)
-//     worksheet.columns = [
-//       { header: 'Case #', key: 'case_number', width: 15 },
-//       { header: 'Technician', key: 'technician_name', width: 25 },
-//       { header: 'Customer', key: 'customer_name', width: 25 },
-//       { header: 'City', key: 'city', width: 20 },
-//       { header: 'Street', key: 'street', width: 30 },
-//       { header: 'Zip', key: 'zip', width: 15 },
-//       { header: 'Complaint', key: 'complaint', width: 30 },
-//       { header: 'Product', key: 'product_name', width: 25 },
-//       { header: 'Status', key: 'line_item_status', width: 15 },
-//     ];
-
-//     // Add rows
-//     tasks.forEach(task => {
-//       worksheet.addRow({
-//         case_number: task.case_number || '',
-//         technician_name: task.technician_name || '',
-//         customer_name: task.customer_name || '',
-//         city: task.city || '',
-//         street: task.street || '',
-//         zip: task.zip || '',
-//         complaint: task.complaint || '',
-//         product_name: task.product_name || '',
-//         line_item_status: task.line_item_status || '',
-//       });
-//     });
-
-//     // Style header row (optional)
-//     worksheet.getRow(1).font = { bold: true };
-//     worksheet.getRow(1).fill = {
-//       type: 'pattern',
-//       pattern: 'solid',
-//       fgColor: { argb: 'FFf97316' },
-//     };
-//     worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' } };
-
-//     // Generate file name with current date
-//     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-//     const fileName = `pending_tasks_${today}.xlsx`;
-
-//     // Set response headers for download
-//     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-
-//     // Write to response
-//     await workbook.xlsx.write(res);
-//     res.end();
-//   } catch (err) {
-//     console.error('Export error:', err.message);
-//     res.status(500).json({ error: 'Failed to generate export' });
-//   }
-// });
-// const ExcelJS = require('exceljs');
-
-// Export pending tasks as Excel with two sheets
 app.get('/api/export-tasks', async (req, res) => {
   try {
     // Fetch all tasks with status 'New' regardless of resolved_at, since the parser may set
@@ -166,7 +87,7 @@ app.get('/api/export-tasks', async (req, res) => {
     const tasks = db.prepare(`
       SELECT 
         case_number,
-        technician_name,
+        COALESCE(NULLIF(technician_name, ''), 'Unassigned') AS technician_name,
         customer_name,
         city,
         street,
@@ -233,7 +154,7 @@ app.get('/api/export-tasks', async (req, res) => {
     // Get technicians with counts per days_pending
     const techRows = db.prepare(`
       SELECT 
-        technician_name,
+        COALESCE(NULLIF(technician_name, ''), 'Unassigned') AS technician_name,
         days_pending,
         COUNT(*) as cnt
       FROM tasks
@@ -298,7 +219,8 @@ app.get('/api/export-tasks', async (req, res) => {
     summarySheet.columns = summaryHeader.values.map((h, i) => ({ width: i === 0 ? 30 : 10 }));
 
     // ---------- Generate file ----------
-    const today = new Date().toISOString().split('T')[0];
+    // const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString();
     const fileName = `pending_tasks_${today}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -414,13 +336,12 @@ app.post('/api/send', async (req, res) => {
       skipped.push({
         technicianName: techName,
         matchedTo: tech.name,
-        reason: 'invalid phone',
+        reason: 'invalid phone make sure it  is 10 digits',
         phone: tech.phone,
         case_number: task.case_number
       });
       continue;
     }
-
     if (!groups.has(tech.id)) groups.set(tech.id, { ...tech, tasks: [] });
     groups.get(tech.id).tasks.push(task);
   }
@@ -583,7 +504,6 @@ app.get('/api/tech-leaderboard', (req, res) => {
       WHERE resolved_at IS NULL AND line_item_status = 'New'
       GROUP BY technician_name
       ORDER BY pending DESC
-      LIMIT 50
     `).all();
     res.json(rows);
   } catch (err) {

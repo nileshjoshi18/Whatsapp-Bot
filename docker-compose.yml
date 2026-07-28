@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: electrolyte-backend
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      SESSION_DATA_PATH: /app/session
+    volumes:
+      - ./backend/db:/app/db
+      - ./backend/data:/app/data
+      - ./backend/session:/app/session
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: electrolyte-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -24,12 +24,20 @@ function daysBetween(dateStr) {
   return Math.floor((now - assigned) / (1000 * 60 * 60 * 24));
 }
 
-function classifyReply(text) {
-  const t = text.toLowerCase();
-  if (['done', 'completed', 'finish', 'fixed', 'resolved'].some(w => t.includes(w))) return 'completed';
-  if (['part', 'waiting', 'delay', 'pending', 'stuck'].some(w => t.includes(w))) return 'delayed';
-  return 'unclassified';
+function normalizeTechnicianName(rawName) {
+  const trimmed = rawName?.trim();
+  if (!trimmed) return 'Unassigned';
+  const lower = trimmed.toLowerCase();
+  if (['blank', 'unassigned', 'null', 'undefined'].includes(lower)) return 'Unassigned';
+  return trimmed;
 }
+
+// function classifyReply(text) {
+//   const t = text.toLowerCase();
+//   if (['done', 'completed', 'finish', 'fixed', 'resolved'].some(w => t.includes(w))) return 'completed';
+//   if (['part', 'waiting', 'delay', 'pending', 'stuck'].some(w => t.includes(w))) return 'delayed';
+//   return 'unclassified';
+// }
 
 function parseAndUpsertCSV(filePath) {
   return new Promise((resolve, reject) => {
@@ -85,17 +93,16 @@ function parseAndUpsertCSV(filePath) {
         }
 
         const woStatus = row['WO Status']?.trim();
-        const techName = row['Technician Name']?.trim();
+        const techName = normalizeTechnicianName(row['Technician Name']);
         const caseNumber = row['Case Number']?.trim();
         const street = row['Street']?.trim() || '';
 
-        if (!techName || !caseNumber) return;
+        if (!caseNumber) return;
 
         const shouldMarkResolved = lineItemStatus !== 'New' && (lineItemStatus === 'Completed' || woStatus === 'Resolved');
         const isCompleted = shouldMarkResolved;
         const daysPending = daysBetween(row['Created Date']?.trim());
 
-        // Prepare insert data (17 values)
         batch.push([
           caseNumber,
           techName,
@@ -152,4 +159,4 @@ function parseAndUpsertCSV(filePath) {
   });
 }
 
-module.exports = { parseAndUpsertCSV, classifyReply };
+module.exports = { parseAndUpsertCSV };

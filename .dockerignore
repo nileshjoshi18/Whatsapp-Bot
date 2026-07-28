@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/.git
+**/.DS_Store
+backend/session
+backend/db/*.db
+backend/data/tmp
+backend/generated-images

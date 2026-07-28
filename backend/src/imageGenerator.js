@@ -5,14 +5,15 @@ const path = require('path');
 function generateTasksCard(tasks, technicianName) {
   const safeName = technicianName || 'Technician';
 
-  // Columns matching the attached image: Case #, Street, Customer, Zip Code, Complaint, LineItem Status
+  // Columns matching the attached image: Case #, TAT, Street, Customer, Zip Code, Complaint, LineItem Status
   const cols = [
-    { key: 'case_number', label: 'Case #', width: 140 },
-    { key: 'street', label: 'Street', width: 360 },
-    { key: 'customer_name', label: 'Customer', width: 220 },
-    { key: 'zip', label: 'Zip Code', width: 110 },
-    { key: 'complaint', label: 'Complaint', width: 260 },
-    { key: 'line_item_status', label: 'LineItem Status', width: 140 },
+    { key: 'case_number', label: 'Case #', width: 120 },
+    { key: 'days_pending', label: 'TAT', width: 70 },
+    { key: 'street', label: 'Street', width: 320 },
+    { key: 'customer_name', label: 'Customer', width: 200 },
+    { key: 'zip', label: 'Zip Code', width: 100 },
+    { key: 'complaint', label: 'Complaint', width: 240 },
+    { key: 'line_item_status', label: 'LineItem Status', width: 130 },
   ];
 
   const margin = 24;

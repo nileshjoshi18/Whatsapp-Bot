@@ -25,22 +25,22 @@ db.prepare(`CREATE TABLE IF NOT EXISTS tasks (
   updated_at TEXT
 )`).run();
 
-db.prepare(`CREATE TABLE IF NOT EXISTS messages (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  technician_name TEXT,
-  phone TEXT,
-  case_number TEXT,
-  sent_at TEXT,
-  status TEXT
-)`).run();
+// db.prepare(`CREATE TABLE IF NOT EXISTS messages (
+//   id INTEGER PRIMARY KEY AUTOINCREMENT,
+//   technician_name TEXT,
+//   phone TEXT,
+//   case_number TEXT,
+//   sent_at TEXT,
+//   status TEXT
+// )`).run();
 
-db.prepare(`CREATE TABLE IF NOT EXISTS replies (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  phone TEXT,
-  reply_text TEXT,
-  received_at TEXT,
-  classification TEXT DEFAULT 'unclassified'
-)`).run();
+// db.prepare(`CREATE TABLE IF NOT EXISTS replies (
+//   id INTEGER PRIMARY KEY AUTOINCREMENT,
+//   phone TEXT,
+//   reply_text TEXT,
+//   received_at TEXT,
+//   classification TEXT DEFAULT 'unclassified'
+// )`).run();
 
 db.prepare(`CREATE TABLE IF NOT EXISTS technicians (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,13 +48,13 @@ db.prepare(`CREATE TABLE IF NOT EXISTS technicians (
   phone TEXT
 )`).run();
 
-db.prepare(`CREATE TABLE IF NOT EXISTS escalations (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  case_number TEXT,
-  technician_name TEXT,
-  escalated_at TEXT,
-  days_pending INTEGER
-)`).run();
+// db.prepare(`CREATE TABLE IF NOT EXISTS escalations (
+//   id INTEGER PRIMARY KEY AUTOINCREMENT,
+//   case_number TEXT,
+//   technician_name TEXT,
+//   escalated_at TEXT,
+//   days_pending INTEGER
+// )`).run();
 
 db.prepare(`CREATE TABLE IF NOT EXISTS send_reports (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
