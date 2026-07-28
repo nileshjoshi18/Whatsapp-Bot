@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Upload from "./pages/Upload";
-import Dashboard from "./pages/Dashboard";
-import Technicians from "./pages/Technicians";
-import Setup from "./pages/Setup";
+import Upload from "./Pages/Upload";
+import Dashboard from "./Pages/Dashboard";
+import Technicians from "./Pages/Technicians";
+import Setup from "./Pages/Setup";
 
 export default function App() {
   const [tab, setTab] = useState("setup");
