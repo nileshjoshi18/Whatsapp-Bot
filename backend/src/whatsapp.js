@@ -2,7 +2,6 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const { generateTasksCard } = require('./imageGenerator');
-const { classifyReply } = require('./csvParser');
 const db = require('./db');
 
 let qrCodeBase64 = null;
@@ -35,21 +34,6 @@ client.on('disconnected', () => {
   console.log('WhatsApp disconnected');
 });
 
-<<<<<<< HEAD
-client.on('message', (msg) => {
-  if (msg.from === 'status@broadcast') return; //  can be added as we fiund more bots  ignore status updates
-  if (msg.isStatus) return;
-  const phone = msg.from.replace('@c.us', '');
-  const body = msg.body;
-  const classification = classifyReply(body);
-
-  db.prepare(
-    `INSERT INTO replies (phone, reply_text, received_at, classification) VALUES (?, ?, ?, ?)`
-  ).run(phone, body, new Date().toISOString(), classification);
-
-  console.log(`Reply from ${phone} [${classification}]: ${body}`);
-});
-=======
 // Technician responses are intentionally ignored per request — do not store or process replies.
 // client.on('message', (msg) => {
 //   // ignore status and broadcast messages
@@ -57,7 +41,6 @@ client.on('message', (msg) => {
 //   if (msg.isStatus) return;
 //   // deliberately do nothing with inbound messages from technicians
 // });
->>>>>>> 8cdcebbcc7a7ac14e9317868afafcc5b31408ed2
 async function sendTaskReminders(tasks, phone) {
   try {
     const technicianName = tasks[0].technician_name;
@@ -75,16 +58,6 @@ const caption = `Hi ${technicianName}, you have ${tasks.length} pending task(s):
     await client.sendMessage(chatId, media, { caption });
 
     // Log each sent message
-<<<<<<< HEAD
-    for (const task of tasks) {
-      db.prepare(
-        `INSERT INTO messages (technician_name, phone, case_number, sent_at, status) VALUES (?, ?, ?, ?, ?)`
-      ).run(technicianName, phone, task.caseNumber, new Date().toISOString(), 'sent');
-      db.prepare(`UPDATE tasks SET last_reminded_at = ? WHERE case_number = ?`)
-        .run(new Date().toISOString(), task.caseNumber);
-    }
-
-=======
     // for (const task of tasks) {
     //   const caseNum = task.case_number || task.caseNumber || null;
     //   db.prepare(
@@ -93,11 +66,12 @@ const caption = `Hi ${technicianName}, you have ${tasks.length} pending task(s):
     //   db.prepare(`UPDATE tasks SET last_reminded_at = ? WHERE case_number = ?`)
     //     .run(new Date().toISOString(), caseNum);
     // }
->>>>>>> 8cdcebbcc7a7ac14e9317868afafcc5b31408ed2
     console.log(`Sent ${tasks.length} tasks to ${technicianName} (${phone})`);
     await new Promise((res) => setTimeout(res, 4000));
   } catch (err) {
-    console.error(`Failed to send to ${tasks[0]?.technicianName || 'unknown'}:`, err.message);
+    console.error(`Failed to send to ${tasks[0]?.technician_name || 'unknown'}:`, err.message);
+    // Rethrow so callers (index.js) can record the failure
+    throw err;
   }
 }
 
