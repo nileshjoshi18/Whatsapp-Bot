@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { useAppContext } from "../context/AppContext";
 
-const API = "http://localhost:5000/api";
+const API = "whatsapp-bot-production-ff4d.up.railway.app/api";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
