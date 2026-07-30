@@ -35,6 +35,14 @@ db.prepare(`CREATE TABLE IF NOT EXISTS tasks (
   updated_at TEXT
 )`).run();
 
+// ✅ ADDED: csvParser.js runs INSERT ... ON CONFLICT(case_number) DO UPDATE ...
+// but case_number had no UNIQUE constraint, so SQLite had nothing to match
+// the conflict clause against ("ON CONFLICT clause does not match any
+// PRIMARY KEY or UNIQUE constraint"). A unique index fixes this without
+// needing to recreate the table (safe for an already-existing db file too),
+// as long as there aren't already duplicate case_number rows in your data.
+db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_case_number ON tasks(case_number)`).run();
+
 db.prepare(`CREATE TABLE IF NOT EXISTS technicians (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT UNIQUE,
