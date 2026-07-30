@@ -15,7 +15,9 @@ const client = new Client({
         dataPath: '/tmp/session'
     }),
     puppeteer: {
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser', // ✅ KEY FIX
+        // ✅ FIXED: fallback now matches the binary name Nixpacks/nixpkgs actually installs
+        // (see nixpacks.toml — nixPkgs includes "chromium", which installs to /usr/bin/chromium)
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
         headless: true,
         args: [
             '--no-sandbox',
@@ -54,15 +56,21 @@ client.on('message', (msg) => {
     if (msg.from === 'status@broadcast') return;
     if (msg.isStatus) return;
 
-    const phone = msg.from.replace('@c.us', '');
-    const body = msg.body;
-    const classification = classifyReply(body);
+    // ✅ FIXED: this handler used to insert with no try/catch — any DB error
+    // (e.g. missing table) threw uncaught and crashed the entire process.
+    try {
+        const phone = msg.from.replace('@c.us', '');
+        const body = msg.body;
+        const classification = classifyReply(body);
 
-    db.prepare(
-        `INSERT INTO replies (phone, reply_text, received_at, classification) VALUES (?, ?, ?, ?)`
-    ).run(phone, body, new Date().toISOString(), classification);
+        db.prepare(
+            `INSERT INTO replies (phone, reply_text, received_at, classification) VALUES (?, ?, ?, ?)`
+        ).run(phone, body, new Date().toISOString(), classification);
 
-    console.log(`Reply from ${phone} [${classification}]: ${body}`);
+        console.log(`Reply from ${phone} [${classification}]: ${body}`);
+    } catch (err) {
+        console.error('Failed to handle incoming message:', err.message);
+    }
 });
 
 // SEND TASK REMINDERS
