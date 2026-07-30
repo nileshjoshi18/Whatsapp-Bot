@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API = "whatsapp-bot-production-ff4d.up.railway.app/api";
+const API = "whatsapp-bot-production-ff4d.up.railway.app";
 
 export default function Technicians() {
   const [technicians, setTechnicians] = useState([]);
