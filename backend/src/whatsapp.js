@@ -1,6 +1,7 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
+const puppeteer = require('puppeteer-core'); // ✅ IMPORTANT
 const { generateTasksCard } = require('./imageGenerator');
 const { classifyReply } = require('./csvParser');
 const db = require('./db');
@@ -8,18 +9,21 @@ const db = require('./db');
 let qrCodeBase64 = null;
 let isReady = false;
 
-// ✅ FIXED CLIENT (Railway-safe)
+// ✅ FIXED CLIENT (NO CRASH)
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: '/tmp/session' // ✅ works on Railway
+        dataPath: '/tmp/session'
     }),
     puppeteer: {
-        headless: true, // ✅ required (no GUI in Railway)
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser', // ✅ KEY FIX
+        headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--no-zygote',
+            '--single-process'
         ]
     }
 });
@@ -36,10 +40,10 @@ client.on('qr', async (qr) => {
 client.on('ready', () => {
     isReady = true;
     qrCodeBase64 = null;
-    console.log('WhatsApp client ready hai');
+    console.log('WhatsApp client ready');
 });
 
-// DISCONNECT EVENT
+// DISCONNECT
 client.on('disconnected', () => {
     isReady = false;
     console.log('WhatsApp disconnected');
@@ -54,7 +58,6 @@ client.on('message', (msg) => {
     const body = msg.body;
     const classification = classifyReply(body);
 
-    // ✅ FIX: replies table must exist in db.js
     db.prepare(
         `INSERT INTO replies (phone, reply_text, received_at, classification) VALUES (?, ?, ?, ?)`
     ).run(phone, body, new Date().toISOString(), classification);
@@ -84,7 +87,7 @@ async function sendTaskReminders(tasks, phone) {
             ).run(
                 technicianName,
                 phone,
-                task.case_number, // ✅ FIXED (was caseNumber)
+                task.case_number,
                 new Date().toISOString(),
                 'sent'
             );
@@ -93,11 +96,11 @@ async function sendTaskReminders(tasks, phone) {
                 .run(new Date().toISOString(), task.case_number);
         }
 
-        console.log(`Sent ${tasks.length} tasks to ${technicianName} (${phone})`);
+        console.log(`Sent ${tasks.length} tasks to ${technicianName}`);
         await new Promise((res) => setTimeout(res, 4000));
 
     } catch (err) {
-        console.error(`Failed to send to ${tasks[0]?.technician_name || 'unknown'}:`, err.message);
+        console.error(`Failed to send:`, err.message);
     }
 }
 
@@ -120,10 +123,10 @@ async function sendEscalation(task, supervisorPhone) {
             task.days_pending
         );
 
-        console.log(`Escalation sent for case ${task.case_number}`);
+        console.log(`Escalation sent`);
 
     } catch (err) {
-        console.error(`Escalation failed for ${task.case_number}:`, err.message);
+        console.error(`Escalation failed:`, err.message);
     }
 }
 
