@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext";
 
-const API = "https://whatsapp-bot-production-ff4d.up.railway.app";
+const API = "https://whatsapp-bot-production-ff4d.up.railway.app/api";
 
 export default function Upload() {
   const { tasks, setTasks, technicians, setTechnicians, triggerRefresh } = useAppContext();

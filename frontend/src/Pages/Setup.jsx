@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = "https://whatsapp-bot-production-ff4d.up.railway.app";
+const API = "https://whatsapp-bot-production-ff4d.up.railway.app/api";
 
 export default function Setup() {
   const [qr, setQr] = useState(null);
